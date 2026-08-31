@@ -16,7 +16,7 @@ async function getSessionFromReq(request: NextRequest) {
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const url = request.nextUrl.clone()
   const user = await getSessionFromReq(request)
 
@@ -67,6 +67,10 @@ export async function middleware(request: NextRequest) {
   }
 
   return NextResponse.next()
+}
+
+export async function middleware(request: NextRequest) {
+  return proxy(request)
 }
 
 export const config = {
