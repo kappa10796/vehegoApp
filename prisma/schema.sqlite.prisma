@@ -1,0 +1,248 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  phone     String?
+  role      String   @default("USER") // USER, DRIVER, ADMIN
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  driverProfile Driver?
+  bookings      Booking[]
+  reviews       Review[]
+  notifications Notification[]
+  supportTickets SupportTicket[]
+}
+
+model Driver {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String?
+  email          String?
+  phone          String?
+  userType       String   @default("DRIVER") // USER, DRIVER
+  licenseNumber  String
+  experience     Int      @default(0)
+  status         String   @default("PENDING") // PENDING, APPROVED, REJECTED, SUSPENDED
+  rejectionReason String?
+  availability   String   @default("OFFLINE") // AVAILABLE, ON_TRIP, OFFLINE
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  documents      DriverDocument[]
+  vehicles       Vehicle[]
+  bookings       Booking[]
+  driverListings DriverListing[]
+}
+
+model DriverDocument {
+  id        String   @id @default(cuid())
+  driverId  String
+  driver    Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  type      String   // LICENSE, RC, INSURANCE, PERMIT, AADHAAR
+  fileUrl   String
+  status    String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Vehicle {
+  id             String   @id @default(cuid())
+  driverId       String
+  driver         Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  model          String
+  brand          String
+  category       String   // HATCHBACK, SEDAN, SUV, PREMIUM_SUV, TEMPO_TRAVELLER
+  seatingCapacity Int
+  acStatus       Boolean  @default(true)
+  registration   String   @unique
+  imageUrl       String?
+  available      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  bookings       Booking[]
+  driverListings DriverListing[]
+}
+
+model Route {
+  id          String   @id @default(cuid())
+  origin      String
+  destination String
+  distance    Float    // in km
+  duration    Int      // in minutes
+  basePrice   Float
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  bookings    Booking[]
+
+  @@unique([origin, destination])
+}
+
+model SightseeingPackage {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  itinerary   String   // JSON string of points/destinations
+  duration    String   // e.g. "Full Day (8 Hours)", "Half Day"
+  price       Float
+  imageUrl    String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PricingRule {
+  id              String   @id @default(cuid())
+  category        String   @unique // HATCHBACK, SEDAN, SUV, PREMIUM_SUV, TEMPO_TRAVELLER
+  baseFare        Float    // Covers first N km
+  perKmRate       Float
+  driverAllowance Float    // Hill/Night stay allowance
+  tollEstimate    Float
+  nightCharge     Float    @default(0)
+  platformFeePct  Float    @default(15.0) // Platform commission percentage
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Booking {
+  id               String   @id @default(cuid())
+  bookingId        String   @unique // Public reference e.g. HR-2026-X89A
+  customerId       String
+  customer         User     @relation(fields: [customerId], references: [id])
+  driverId         String?
+  driver           Driver?  @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  vehicleId        String?
+  vehicle          Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  routeId          String?
+  route            Route?   @relation(fields: [routeId], references: [id], onDelete: SetNull)
+  driverListingId  String?
+  driverListing    DriverListing? @relation(fields: [driverListingId], references: [id], onDelete: SetNull)
+
+  tripType         String   // ONE_WAY, ROUND_TRIP, SIGHTSEEING, LOCAL_RENTAL
+  pickupLocation   String
+  dropLocation     String?
+  pickupTime       String?  // e.g. "09:30 AM" or "09:30"
+  tripDate         DateTime
+  returnDate       DateTime?
+  passengers       Int      @default(1)
+
+  totalFare        Float
+  fareBreakdown    String   // JSON string of breakdown details
+  status           String   @default("PENDING") // PENDING, CONFIRMED, DRIVER_ASSIGNED, DRIVER_ARRIVING, TRIP_STARTED, COMPLETED, CANCELLED, REFUNDED
+  paymentStatus    String   @default("PENDING") // PENDING, PAID, REFUNDED
+
+  specialInstructions String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  payment          Payment?
+  review           Review?
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  bookingId     String   @unique
+  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  amount        Float
+  paymentMethod String   // UPI, CARD, NETBANKING, PAY_AT_PICKUP
+  transactionId String?
+  status        String   @default("PENDING") // PENDING, SUCCESS, FAILED, REFUNDED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  bookingId String   @unique
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    Int      // 1 to 5
+  comment   String?
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  status    String   @default("UNREAD") // UNREAD, READ
+  createdAt DateTime @default(now())
+}
+
+model Coupon {
+  id             String   @id @default(cuid())
+  code           String   @unique
+  discountType   String   // PERCENTAGE, FLAT
+  discountValue  Float
+  minBookingAmt  Float    @default(0)
+  maxDiscount    Float?
+  expiryDate     DateTime
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+}
+
+model SupportTicket {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   String
+  message   String
+  priority  String   @default("NORMAL") // LOW, NORMAL, HIGH
+  status    String   @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, CLOSED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PasswordResetOtp {
+  id        String   @id @default(cuid())
+  email     String
+  otp       String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model DriverListing {
+  id             String   @id @default(cuid())
+  driverId       String
+  driver         Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  vehicleId      String?
+  vehicle        Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+
+  type           String   // ROUTE_RIDE, SIGHTSEEING
+  title          String
+  origin         String?
+  destination    String?
+  itinerary      String?  // JSON string e.g. ["Tsomgo Lake", "Nathula Pass"]
+  duration       String?  // e.g. "Full Day" or "4 Hours"
+  
+  customPrice    Float    // Base price set by driver
+  suggestedPrice Float    // Calculated price suggestion based on market rules & demand
+  timeSlotPricing String? // JSON string of 1-hour bandwidth pickup time slot prices e.g. [{"slot":"09:00-10:00","label":"09:00 AM - 10:00 AM","price":3800}]
+  
+  availableSeats Int      @default(4)
+  availableDate  DateTime
+  notes          String?
+  status         String   @default("ACTIVE") // ACTIVE, BOOKED, COMPLETED, CANCELLED
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  bookings       Booking[]
+}
