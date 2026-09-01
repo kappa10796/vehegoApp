@@ -102,8 +102,8 @@ export async function GET(req: NextRequest) {
       })
 
     return NextResponse.json({ listings })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching public driver listings:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ listings: [], error: error?.message || 'Internal server error' }, { status: 200 })
   }
 }

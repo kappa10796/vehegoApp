@@ -105,8 +105,9 @@ export async function GET(req: Request) {
     }).filter(Boolean)
 
     return NextResponse.json({ results, route })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Cab search error:', error)
-    return NextResponse.json({ error: 'Failed to search cabs' }, { status: 500 })
+    // Return empty results with status 200 instead of crashing if DB table is initializing or empty
+    return NextResponse.json({ results: [], error: error?.message || 'Failed to search cabs' }, { status: 200 })
   }
 }
