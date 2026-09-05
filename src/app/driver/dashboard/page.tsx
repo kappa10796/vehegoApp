@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   Car, Power, MapPin, Calendar, IndianRupee, ShieldAlert, CheckCircle2,
-  Clock, ArrowRight, Loader2, Navigation, AlertTriangle, Compass, Plus, Tag
+  Clock, ArrowRight, Loader2, Navigation, AlertTriangle, Compass, Plus, Tag, Sparkles
 } from 'lucide-react'
 
 export default function DriverDashboardPage() {
@@ -15,8 +15,12 @@ export default function DriverDashboardPage() {
 
   useEffect(() => {
     fetch('/api/driver/dashboard')
-      .then(res => res.json())
-      .then(resData => {
+      .then(async res => {
+        if (res.status === 401) {
+          router.push('/login?redirect=/driver/dashboard')
+          return
+        }
+        const resData = await res.json()
         if (!resData.driver) {
           router.push('/driver/register')
         } else {
@@ -55,7 +59,25 @@ export default function DriverDashboardPage() {
     return <div className="min-h-screen flex items-center justify-center bg-slate-50"><Loader2 className="w-8 h-8 animate-spin text-[#E34234]" /></div>
   }
 
-  if (!data || !data.driver) return null
+  if (!data || !data.driver) {
+    return (
+      <div className="min-h-screen bg-slate-50 py-16 flex items-center justify-center font-sans">
+        <div className="bg-white border border-slate-200 p-8 rounded-3xl max-w-md w-full text-center space-y-4 shadow-sm">
+          <Car className="w-12 h-12 text-[#E34234] mx-auto" />
+          <h2 className="text-xl font-black text-slate-900">Driver Portal Access</h2>
+          <p className="text-xs text-slate-600 font-medium">Please login with your driver account or register your commercial vehicle to access the duty dashboard.</p>
+          <div className="pt-2 flex flex-col gap-2">
+            <Link href="/login?redirect=/driver/dashboard" className="w-full py-3 bg-[#E34234] hover:bg-[#c93225] text-white font-extrabold text-xs rounded-xl shadow-sm transition">
+              Login to Driver Dashboard →
+            </Link>
+            <Link href="/driver/register" className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs rounded-xl transition">
+              Register as Driver
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const { driver, stats, assignedBookings, upcomingTrips } = data
   const isApproved = driver.status === 'APPROVED'
@@ -125,6 +147,32 @@ export default function DriverDashboardPage() {
           ) : (
             <div className="bg-amber-950/60 border border-amber-500/40 text-amber-300 font-extrabold px-5 py-3 rounded-2xl text-xs flex items-center gap-2 flex-shrink-0">
               <AlertTriangle className="w-4 h-4 text-amber-400" /> Listings Feature Locked: Pending Approval
+            </div>
+          )}
+        </div>
+
+        {/* CUSTOM TOUR BIDDING MARKETPLACE BANNER */}
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 md:p-8 rounded-3xl text-white shadow-xl mb-8 border-l-8 border-amber-500 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/20 border border-amber-500/30 text-amber-300 rounded-full text-xs font-black uppercase tracking-wider mb-2">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Bidding Marketplace
+            </div>
+            <h2 className="text-2xl font-black text-white">Customer Custom Tour Requests</h2>
+            <p className="text-slate-300 text-sm font-medium mt-1 max-w-xl">
+              Inspect customer day-by-day itineraries (Day 1, Day 2...) and quote your price. Customers will compare driver bids and confirm bookings directly!
+            </p>
+          </div>
+
+          {isApproved ? (
+            <Link
+              href="/driver/custom-tours"
+              className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold px-6 py-3.5 rounded-2xl transition-all flex items-center gap-2 shadow-md text-sm flex-shrink-0"
+            >
+              <Tag className="w-5 h-5 stroke-[2.5]" /> View & Quote Tour Requests →
+            </Link>
+          ) : (
+            <div className="bg-amber-950/60 border border-amber-500/40 text-amber-300 font-extrabold px-5 py-3 rounded-2xl text-xs flex items-center gap-2 flex-shrink-0">
+              <AlertTriangle className="w-4 h-4 text-amber-400" /> Feature Locked: Pending Approval
             </div>
           )}
         </div>

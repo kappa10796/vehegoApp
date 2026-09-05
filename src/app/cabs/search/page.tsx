@@ -136,6 +136,25 @@ function SearchResultsContent() {
           </Link>
         </div>
 
+        {/* Custom Multi-Day Tour Banner */}
+        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-5 rounded-3xl border border-slate-700 shadow-md mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-[#E34234]/20 border border-[#E34234]/30 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-6 h-6 text-amber-400" />
+            </div>
+            <div>
+              <h3 className="font-extrabold text-white text-base">Planning a Custom Multi-Day Himalayan Tour?</h3>
+              <p className="text-xs text-slate-300 mt-0.5">List your day-by-day touring itinerary (Day 1, Day 2...) & receive direct price quotes from verified drivers!</p>
+            </div>
+          </div>
+          <Link
+            href="/custom-tour/new"
+            className="w-full md:w-auto px-5 py-2.5 bg-[#E34234] hover:bg-[#c93629] text-white font-extrabold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition flex-shrink-0"
+          >
+            Post Custom Tour Request →
+          </Link>
+        </div>
+
         {/* PICKUP TIME & CAR TYPE TOP FILTER BAR */}
         <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-8 space-y-5">
           {/* Row 1: Pickup Time Slot */}

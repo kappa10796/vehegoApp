@@ -93,6 +93,12 @@ export function Navbar() {
             /* PASSENGER / PUBLIC NAVIGATION OPTIONS */
             <>
               <Link href="/cabs/search" className={`text-sm font-extrabold transition-colors ${pathname === '/cabs/search' ? 'text-[#E34234]' : 'text-slate-700 hover:text-[#E34234]'}`}>Cabs</Link>
+              <Link href="/custom-tours" className={`text-sm font-extrabold transition-colors flex items-center gap-1.5 ${pathname === '/custom-tours' ? 'text-[#E34234]' : 'text-slate-700 hover:text-[#E34234]'}`}>
+                <Compass className="w-4 h-4 text-[#E34234]" /> Custom Tours & Bids
+              </Link>
+              <Link href="/custom-tour/new" className={`text-sm font-extrabold transition-colors flex items-center gap-1.5 ${pathname === '/custom-tour/new' ? 'text-[#E34234]' : 'text-slate-700 hover:text-[#E34234]'}`}>
+                <Sparkles className="w-4 h-4 text-amber-500" /> Post Tour Request
+              </Link>
               <Link href="/sightseeing" className={`text-sm font-extrabold transition-colors ${pathname === '/sightseeing' ? 'text-[#E34234]' : 'text-slate-700 hover:text-[#E34234]'}`}>Sightseeing</Link>
               <Link href="/dashboard" className={`text-sm font-extrabold transition-colors ${pathname === '/dashboard' ? 'text-[#E34234]' : 'text-slate-700 hover:text-[#E34234]'}`}>My Bookings</Link>
             </>
@@ -145,7 +151,8 @@ export function Navbar() {
           <div className="flex flex-col p-4 space-y-3">
             {user?.role === 'DRIVER' ? (
               <>
-                <Link href="/driver/listings" onClick={() => setIsMenuOpen(false)} className="text-sm font-extrabold text-[#E34234] py-1">Custom Rides & Sightseeing</Link>
+                <Link href="/driver/custom-tours" onClick={() => setIsMenuOpen(false)} className="text-sm font-extrabold text-[#E34234] py-1 flex items-center gap-1.5"><Sparkles className="w-4 h-4 text-amber-500" /> Custom Tour Bids</Link>
+                <Link href="/driver/listings" onClick={() => setIsMenuOpen(false)} className="text-sm font-bold text-slate-700 py-1">Standard Listings & Sightseeing</Link>
                 <Link href="/driver/dashboard" onClick={() => setIsMenuOpen(false)} className="text-sm font-extrabold text-slate-900 py-1">Duty Schedule & Stats</Link>
               </>
             ) : user?.role === 'ADMIN' ? (
@@ -159,6 +166,7 @@ export function Navbar() {
             ) : (
               <>
                 <Link href="/cabs/search" onClick={() => setIsMenuOpen(false)} className="text-sm font-extrabold text-slate-800 py-1">Cabs</Link>
+                <Link href="/custom-tour/new" onClick={() => setIsMenuOpen(false)} className="text-sm font-extrabold text-[#E34234] py-1 flex items-center gap-1.5"><Sparkles className="w-4 h-4 text-amber-500" /> Custom Tour Request</Link>
                 <Link href="/sightseeing" onClick={() => setIsMenuOpen(false)} className="text-sm font-extrabold text-slate-800 py-1">Sightseeing</Link>
                 <Link href="/dashboard" onClick={() => setIsMenuOpen(false)} className="text-sm font-extrabold text-slate-800 py-1">My Bookings</Link>
               </>

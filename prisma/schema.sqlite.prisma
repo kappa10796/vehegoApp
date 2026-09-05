@@ -22,6 +22,7 @@ model User {
   reviews       Review[]
   notifications Notification[]
   supportTickets SupportTicket[]
+  customTourRequests CustomTourRequest[]
 }
 
 model Driver {
@@ -44,6 +45,7 @@ model Driver {
   vehicles       Vehicle[]
   bookings       Booking[]
   driverListings DriverListing[]
+  customTourQuotes CustomTourQuote[]
 }
 
 model DriverDocument {
@@ -74,6 +76,7 @@ model Vehicle {
 
   bookings       Booking[]
   driverListings DriverListing[]
+  customTourQuotes CustomTourQuote[]
 }
 
 model Route {
@@ -246,3 +249,39 @@ model DriverListing {
 
   bookings       Booking[]
 }
+
+model CustomTourRequest {
+  id             String            @id @default(cuid())
+  customerId     String
+  customer       User              @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  title          String?           // e.g. "5-Day Sikkim & Darjeeling Expedition"
+  startCity      String            // e.g. "Siliguri" or "Bagdogra Airport"
+  startDate      DateTime
+  totalDays      Int               @default(1)
+  passengers     Int               @default(2)
+  preferredCab   String?           // HATCHBACK, SEDAN, SUV, PREMIUM_SUV, TEMPO_TRAVELLER, ANY
+  dayItinerary   String            // JSON string e.g. [{"day":1,"title":"Bagdogra to Gangtok","details":"..."},...]
+  specialNotes   String?
+  status         String            @default("OPEN") // OPEN, ACCEPTED, EXPIRED, CANCELLED
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  quotes         CustomTourQuote[]
+}
+
+model CustomTourQuote {
+  id             String            @id @default(cuid())
+  requestId      String
+  request        CustomTourRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  driverId       String
+  driver         Driver            @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  vehicleId      String?
+  vehicle        Vehicle?          @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+
+  quotedPrice    Float
+  notes          String?           // e.g. "Includes fuel, driver allowance & tolls"
+  status         String            @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+}
+
